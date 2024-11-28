@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/mwo"
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/homeFragment"
+            android:icon="@drawable/baseline_home_24"
+            android:title="@string/home" />
+
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/baseline_supervised_user_circle_24"
+            android:title="@string/about_us" />
+
+        <item
+            android:id="@+id/nav_refer"
+            android:icon="@drawable/baseline_share_24"
+            android:title="@string/refer_friends" />
+
+        <item
+            android:id="@+id/nav_rate"
+            android:icon="@drawable/baseline_star_rate_24"
+            android:title="@string/rate_app" />
+    </group>
+
+
+    <item
+        android:id="@+id/profileFragment"
+        android:title="@string/account">
+        <menu>
+            <item
+                android:id="@+id/nav_profile"
+                android:icon="@drawable/baseline_people_24"
+                android:title="@string/profile" />
+            <item
+                android:id="@+id/nav_change_password"
+                android:icon="@drawable/baseline_lock_reset_24"
+                android:title="@string/change_password"/>
+            <item
+                android:id="@+id/nav_sign_out"
+                android:icon="@drawable/baseline_logout_24"
+                android:title="@string/sign_out" />
+
+
+        </menu>
+    </item>
+
+
+</menu>

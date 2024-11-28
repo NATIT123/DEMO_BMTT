@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Demo</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="upload_video">Upload Video</string>
+    <string name="list_video">List Video</string>
+    <string name="profile">Profile</string>
+    <string name="shared_video">Shared Video</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+</resources>
