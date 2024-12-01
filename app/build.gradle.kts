@@ -50,6 +50,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.4")
+    implementation("androidx.activity:activity:1.9.3")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
@@ -95,4 +96,10 @@ dependencies {
 
     //Circle Indicator
     implementation("me.relex:circleindicator:2.1.6")
+
+    //Hash Password
+    implementation("com.ToxicBakery.library.bcrypt:bcrypt:1.0.9")
+
+    //Circle ImageView
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
 }
