@@ -31,7 +31,6 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentProfileBinding.inflate(layoutInflater)
-        // Inflate the layout for this fragment
         return binding.root
     }
 
@@ -39,8 +38,15 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         preferenceManager = PreferenceManager(requireContext())
         preferenceManager.instance()
+
+
+        Log.d("MyApp","dsadsa")
+
+        loadData()
+
 
         ///Change Password
         binding.btnChangePassword.setOnClickListener {
@@ -78,7 +84,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadData() {
-        Log.d("MyApp",preferenceManager.getString(KEY_USER_EMAIL).toString())
         binding.tvEmail.text = preferenceManager.getString(KEY_USER_EMAIL)
         binding.tvFullName.text = preferenceManager.getString(KEY_USER_FULL_NAME)
         val bytes = Base64.decode(preferenceManager.getString(KEY_USER_IMAGE), Base64.DEFAULT)

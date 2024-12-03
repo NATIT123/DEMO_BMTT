@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
     private var userListLiveData = demoDatabase.demoDAO().getListUser();
     private var userLiveData = MutableLiveData<User>();
+    private var userEmailLiveData = MutableLiveData<User>();
 
 
     fun checkIsExist(email: String, password: String) {
@@ -21,11 +22,29 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
         return userLiveData
     }
 
-    fun addUser(user: User): Long {
-        var id = 0L;
+    fun addUser(user: User) {
         viewModelScope.launch {
-            id = demoDatabase.demoDAO().upsert(user);
+            demoDatabase.demoDAO().upsert(user);
         }
-        return id;
+    }
+
+    fun updateUser(user: User) {
+        viewModelScope.launch {
+            demoDatabase.demoDAO().updateUser(user.fullName, user.image, user.email)
+        }
+    }
+
+    fun changePassword(password: String) {
+        viewModelScope.launch {
+            demoDatabase.demoDAO().changePassword(password)
+        }
+    }
+
+    fun checkEmailIsExist(email: String) {
+        userEmailLiveData.postValue(demoDatabase.demoDAO().checkEmailIsExist(email))
+    }
+
+    fun observerUserEmail(): MutableLiveData<User> {
+        return userEmailLiveData
     }
 }

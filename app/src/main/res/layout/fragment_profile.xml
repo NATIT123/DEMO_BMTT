@@ -112,33 +112,16 @@
                 android:textStyle="bold"
                 app:drawableStartCompat="@drawable/baseline_email_24" />
 
-
-            <FrameLayout
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnChangePassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20sdp"
-                android:animateLayoutChanges="true">
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btnChangePassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/_10sdp"
-                    android:layout_marginEnd="@dimen/_10sdp"
-                    android:background="@drawable/background_coupon"
-                    android:text="Change Password"
-                    android:textStyle="bold"
-                    android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
-
-                <ProgressBar
-                    android:id="@+id/progress_bar1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="@{isLoading?View.VISIBLE:View.GONE,default=gone}" />
-                />
-
-
-            </FrameLayout>
+                android:layout_marginStart="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:background="@drawable/background_coupon"
+                android:text="Change Password"
+                android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnSignOut"
@@ -149,15 +132,7 @@
                 android:layout_marginEnd="@dimen/_10sdp"
                 android:background="@drawable/background_bottom_nav"
                 android:text="SignOut"
-                android:textStyle="bold"
-                android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
-
-            <ProgressBar
-                android:id="@+id/progress_bar2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="@{isLoading?View.VISIBLE:View.GONE,default=gone}" />
-            />
+                android:textStyle="bold" />
 
 
         </LinearLayout>

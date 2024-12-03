@@ -19,4 +19,13 @@ interface DemoDAO {
     @Query("SELECT * FROM users WHERE email = :email AND password = :password")
     fun getUserByEmailAndPassword(email: String, password: String): User
 
+    @Query("UPDATE users SET full_name= :fullName AND image= :image WHERE email= :email")
+    fun updateUser(fullName: String, image: String, email: String)
+
+    @Query("SELECT * FROM users WHERE email= :email")
+    fun checkEmailIsExist(email: String): User
+
+    @Query("UPDATE users SET password= :password")
+    fun changePassword(password: String)
+
 }

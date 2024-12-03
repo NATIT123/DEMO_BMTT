@@ -1,17 +1,29 @@
 package com.example.demo.activities
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.InputType
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.demo.R
+import com.example.demo.database.DemoDatabase
 import com.example.demo.databinding.ActivityChangePasswordBinding
+import com.example.demo.utils.Constants
 import com.example.demo.utils.PreferenceManager
+import com.example.demo.viewModel.DemoViewModel
+import com.example.demo.viewModel.DemoViewModelFactory
 import com.toxicbakery.bcrypt.Bcrypt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 
 class ChangePasswordActivity : AppCompatActivity() {
@@ -20,6 +32,13 @@ class ChangePasswordActivity : AppCompatActivity() {
     private var showPassword: Boolean = false
     private var showPasswordConfirm: Boolean = false
     private var showNewPassword: Boolean = false
+
+    private val userViewModel: DemoViewModel by lazy {
+        val demoDatabase = DemoDatabase.getInstance(this)
+        val demoViewModelFactory = DemoViewModelFactory(demoDatabase)
+        ViewModelProvider(this, demoViewModelFactory)[DemoViewModel::class.java]
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -111,7 +130,10 @@ class ChangePasswordActivity : AppCompatActivity() {
     }
 
     private fun isValidChangePassword() {
-        if (!Bcrypt.verify(
+        if (binding.edtOldPassword.text.isEmpty()) {
+            showToast("Please enter old password")
+            return
+        } else if (!Bcrypt.verify(
                 binding.edtOldPassword.text.toString(),
                 getPasswordHash()
             )
@@ -136,13 +158,31 @@ class ChangePasswordActivity : AppCompatActivity() {
 
     private fun changePassword() {
         val newPassword = binding.edtNewPassword.text.toString()
-        val oldPassword = binding.edtOldPassword.text.toString()
-        if (!Bcrypt.verify(oldPassword, getPasswordHash())) {
-            showToast("Old password is not correct")
-            isLoading(false)
-        } else {
-
-        }
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            userViewModel.changePassword(newPassword)
+            val passwordHashed = Bcrypt.hash(
+                newPassword,
+                Constants.SALT_ROUNDS
+            )
+            runBlocking {
+                val file = File(filesDir, "my_file.bin")
+                withContext(Dispatchers.IO) {
+                    FileOutputStream(file).use { output ->
+                        output.write(passwordHashed)
+                    }
+                }
+            }
+            showToast("Please Sign in again.")
+            finishAffinity()
+            preferenceManager.clear()
+            val intent =
+                Intent(
+                    this@ChangePasswordActivity,
+                    SignInActivity::class.java
+                )
+            startActivity(intent)
+        }, 3000)
 
     }
 

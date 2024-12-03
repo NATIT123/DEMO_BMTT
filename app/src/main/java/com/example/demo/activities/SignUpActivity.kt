@@ -179,32 +179,39 @@ class SignUpActivity : AppCompatActivity() {
         }
 
         user.let {
-            val id = userViewModel.addUser(user);
+            userViewModel.checkEmailIsExist(user.email)
+            userViewModel.observerUserEmail().observe(this) { currentUser ->
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    currentUser?.let {
+                        isLoading(false)
+                        showToast("Email is Exist")
+                    } ?: kotlin.run {
+                        userViewModel.addUser(user)
+                        preferenceManager.putString(
+                            KEY_USER_EMAIL,
+                            user.email
+                        );
+                        preferenceManager.putString(
+                            KEY_USER_FULL_NAME,
+                            user.fullName
+                        )
+                        preferenceManager.putString(KEY_USER_IMAGE, user.image)
+                        val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        startActivity(intent)
+                        Toast.makeText(
+                            this@SignUpActivity,
+                            "Register Successfully",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                }, 3000)
 
-            preferenceManager.putLong(Constants.KEY_USER_ID, id);
+            }
 
-            preferenceManager.putString(
-                KEY_USER_EMAIL,
-                user.email
-            );
-            preferenceManager.putString(
-                KEY_USER_FULL_NAME,
-                user.fullName
-            )
-            preferenceManager.putString(KEY_USER_IMAGE, user.image)
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                isLoading(false);
-                val intent = Intent(this@SignUpActivity, MainActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                startActivity(intent)
-                Toast.makeText(
-                    this@SignUpActivity,
-                    "Register Successfully",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
-            }, 2000)
+
         }
 
 

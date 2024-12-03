@@ -5,17 +5,25 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Base64
+import android.util.Log
 import android.widget.Toast
 import com.example.demo.models.User
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModelProvider
+import com.example.demo.MainActivity
+import com.example.demo.database.DemoDatabase
 import com.example.demo.databinding.ActivityEditProfileBinding
 import com.example.demo.utils.Constants
 import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
-import com.example.demo.utils.Constants.Companion.KEY_USER_ID
+import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
 import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE
 import com.example.demo.utils.PreferenceManager
+import com.example.demo.viewModel.DemoViewModel
+import com.example.demo.viewModel.DemoViewModelFactory
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
 
@@ -23,7 +31,13 @@ class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditProfileBinding
     private lateinit var preferenceManager: PreferenceManager
-    private lateinit var encodeImage: String
+    private var encodeImage: String? = null
+
+    private val userViewModel: DemoViewModel by lazy {
+        val demoDatabase = DemoDatabase.getInstance(this)
+        val demoViewModelFactory = DemoViewModelFactory(demoDatabase)
+        ViewModelProvider(this, demoViewModelFactory)[DemoViewModel::class.java]
+    }
 
     private val pickImage =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -74,13 +88,10 @@ class EditProfileActivity : AppCompatActivity() {
         //Update profile
         binding.btnSave.setOnClickListener {
             isLoading(true)
-            val id = preferenceManager.getString(KEY_USER_ID)
             val fullName = binding.edtFullName.text.toString()
-            val image = encodeImage
-            val email = preferenceManager.getString(KEY_USER_EMAIL)
+            val image = encodeImage ?: preferenceManager.getString(KEY_USER_IMAGE)
             updateUser(
-                id!!,
-                User(fullName = fullName,  image = image,email=email!!)
+                User(fullName = fullName, image = image!!)
             )
         }
 
@@ -98,9 +109,33 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
 
+    private fun updateUser(user: User) {
+        userViewModel.checkEmailIsExist(user.email)
+        userViewModel.observerUserEmail().observe(this) { currentUser ->
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                isLoading(false)
+                currentUser?.let {
+                    showToast("User is not Exist")
+                } ?: kotlin.run {
+                    userViewModel.updateUser(user);
+                    preferenceManager.putString(KEY_USER_IMAGE, user.image)
+                    preferenceManager.putString(KEY_USER_FULL_NAME, user.fullName)
+                    Toast.makeText(
+                        this@EditProfileActivity,
+                        "Update user Successfully",
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                    finish()
+                }
+            }, 3000)
 
-    private fun updateUser(id: String, user: User) {
+        }
+    }
 
+    private fun showToast(message: String) {
+        Toast.makeText(this@EditProfileActivity, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun getUserImage(url: String): Bitmap {
