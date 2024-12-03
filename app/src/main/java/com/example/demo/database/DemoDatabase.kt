@@ -32,5 +32,5 @@ abstract class DemoDatabase : RoomDatabase() {
         }
     }
 
-    abstract fun productWishlistDAO(): DemoDAO
+    abstract fun demoDAO(): DemoDAO
 }

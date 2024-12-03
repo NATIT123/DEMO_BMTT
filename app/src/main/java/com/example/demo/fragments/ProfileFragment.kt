@@ -1,60 +1,94 @@
 package com.example.demo.fragments
 
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.demo.R
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.example.demo.activities.ChangePasswordActivity
+import com.example.demo.activities.EditProfileActivity
+import com.example.demo.activities.SignInActivity
+import com.example.demo.databinding.FragmentProfileBinding
+import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
+import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
+import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE
+import com.example.demo.utils.PreferenceManager
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+
+    private lateinit var binding: FragmentProfileBinding
+    private lateinit var preferenceManager: PreferenceManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        binding = FragmentProfileBinding.inflate(layoutInflater)
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ProfileFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    //
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        preferenceManager = PreferenceManager(requireContext())
+        preferenceManager.instance()
+
+        ///Change Password
+        binding.btnChangePassword.setOnClickListener {
+            val intent = Intent(activity, ChangePasswordActivity::class.java);
+            startActivity(intent)
+        }
+
+        //Edit Profile
+        binding.btnEdit.setOnClickListener {
+            val intent = Intent(activity, EditProfileActivity::class.java);
+            startActivity(intent)
+        }
+
+        //Sign Out
+        binding.btnSignOut.setOnClickListener {
+            val dialog = AlertDialog.Builder(requireActivity())
+            dialog.apply {
+                setTitle("Confirm Logout")
+                setMessage("Are you sure you want to logout?")
+                setCancelable(false)
+                setPositiveButton("Yes") { _, _ ->
+                    preferenceManager.clear()
+                    requireActivity().finishAffinity()
+                    val intent = Intent(requireActivity(), SignInActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
                 }
+                setNegativeButton("No") { dialogInterface, _ ->
+                    dialogInterface.dismiss()
+                }
+                create()
+                show()
             }
+        }
+    }
+
+    private fun loadData() {
+        Log.d("MyApp",preferenceManager.getString(KEY_USER_EMAIL).toString())
+        binding.tvEmail.text = preferenceManager.getString(KEY_USER_EMAIL)
+        binding.tvFullName.text = preferenceManager.getString(KEY_USER_FULL_NAME)
+        val bytes = Base64.decode(preferenceManager.getString(KEY_USER_IMAGE), Base64.DEFAULT)
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        Glide.with(requireContext()).load(bitmap)
+            .into(binding.avatar)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        loadData()
     }
 }

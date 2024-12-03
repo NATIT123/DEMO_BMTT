@@ -32,21 +32,30 @@ class PreferenceManager(private val context: Context) {
         editor.apply()
     }
 
+    fun putLong(key: String, value: Long) {
+        editor.putLong(key, value)
+        editor.apply()
+    }
+
+    fun getLong(key: String): Long {
+        return sharedPreferences.getLong(key, 0)
+    }
+
     fun getString(key: String): String? {
         return sharedPreferences.getString(key, null)
     }
 
-    fun putList(key: String,value:List<User>){
+    fun putList(key: String, value: List<User>) {
         val gson = Gson()
         val json = gson.toJson(value)
-        editor.putString(key,json)
+        editor.putString(key, json)
         editor.apply()
     }
 
-    fun getList(key:String):List<User>{
+    fun getList(key: String): List<User> {
         var listProduct = listOf<User>()
-        val serializedObject = sharedPreferences.getString(key,null)
-        if(serializedObject!=null){
+        val serializedObject = sharedPreferences.getString(key, null)
+        if (serializedObject != null) {
             val gson = Gson()
             val type: Type = object : TypeToken<List<User?>?>() {}.type
             listProduct = gson.fromJson(serializedObject, type)

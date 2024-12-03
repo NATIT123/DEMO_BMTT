@@ -5,10 +5,7 @@ import android.text.InputType
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.demo.R
 import com.example.demo.databinding.ActivityChangePasswordBinding
 import com.example.demo.utils.PreferenceManager

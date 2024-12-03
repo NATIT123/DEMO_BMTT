@@ -5,25 +5,29 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.InputType
 import android.util.Base64
 import android.util.Patterns
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.demo.MainActivity
 import com.example.demo.R
+import com.example.demo.database.DemoDatabase
 import com.example.demo.databinding.ActivitySignUpBinding
 import com.example.demo.models.User
+import com.example.demo.utils.Constants
 import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
 import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
 import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE
 import com.example.demo.utils.Constants.Companion.SALT_ROUNDS
 import com.example.demo.utils.PreferenceManager
+import com.example.demo.viewModel.DemoViewModel
+import com.example.demo.viewModel.DemoViewModelFactory
 import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -38,6 +42,13 @@ class SignUpActivity : AppCompatActivity() {
 
     private var showPassword: Boolean = false
     private var showPasswordConfirm: Boolean = false
+
+    private val userViewModel: DemoViewModel by lazy {
+        val demoDatabase = DemoDatabase.getInstance(this)
+        val demoViewModelFactory = DemoViewModelFactory(demoDatabase)
+        ViewModelProvider(this, demoViewModelFactory)[DemoViewModel::class.java]
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
@@ -153,7 +164,7 @@ class SignUpActivity : AppCompatActivity() {
 
     }
 
-    private fun handleRegister(user:User){
+    private fun handleRegister(user: User) {
         val passwordHashed = Bcrypt.hash(
             user.password,
             SALT_ROUNDS
@@ -167,25 +178,36 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
 
-        preferenceManager.putString(
-            KEY_USER_EMAIL,
-            user.email
-        );
-        preferenceManager.putString(
-            KEY_USER_FULL_NAME,
-            user.fullName
-        )
-        preferenceManager.putString(KEY_USER_IMAGE, user.image)
-        isLoading(false);
-        val intent = Intent(this@SignUpActivity, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        startActivity(intent)
-        Toast.makeText(
-            this@SignUpActivity,
-            "Register Successfully",
-            Toast.LENGTH_SHORT
-        )
-            .show()
+        user.let {
+            val id = userViewModel.addUser(user);
+
+            preferenceManager.putLong(Constants.KEY_USER_ID, id);
+
+            preferenceManager.putString(
+                KEY_USER_EMAIL,
+                user.email
+            );
+            preferenceManager.putString(
+                KEY_USER_FULL_NAME,
+                user.fullName
+            )
+            preferenceManager.putString(KEY_USER_IMAGE, user.image)
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                isLoading(false);
+                val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                startActivity(intent)
+                Toast.makeText(
+                    this@SignUpActivity,
+                    "Register Successfully",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }, 2000)
+        }
+
+
     }
 
     private fun isLoading(isLoading: Boolean) {

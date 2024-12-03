@@ -78,16 +78,6 @@
                 android:src="@drawable/baseline_visibility_off_24" />
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/btnForgotPassword"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginTop="@dimen/_10sdp"
-            android:layout_marginEnd="@dimen/_10sdp"
-            android:text="Forgot Password"
-            android:textColor="@color/DeepSkyBlue"
-            android:textSize="@dimen/_10sdp" />
 
         <FrameLayout
             android:layout_width="match_parent"

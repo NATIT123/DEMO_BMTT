@@ -16,4 +16,7 @@ interface DemoDAO {
     @Query("SELECT * FROM users")
     fun getListUser(): LiveData<List<User>>
 
+    @Query("SELECT * FROM users WHERE email = :email AND password = :password")
+    fun getUserByEmailAndPassword(email: String, password: String): User
+
 }
