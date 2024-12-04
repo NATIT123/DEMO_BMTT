@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.demo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.demo"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -99,5 +99,14 @@ dependencies {
 
     //HashPassword
     implementation("com.ToxicBakery.library.bcrypt:bcrypt:1.0.9")
+
+
+    //Encrypt
+    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+
+    //Exo Player
+    implementation("androidx.media3:media3-exoplayer:1.5.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.5.0")
+    implementation("androidx.media3:media3-ui:1.5.0")
 
 }

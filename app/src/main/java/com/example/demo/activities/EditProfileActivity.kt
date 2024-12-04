@@ -90,8 +90,9 @@ class EditProfileActivity : AppCompatActivity() {
             isLoading(true)
             val fullName = binding.edtFullName.text.toString()
             val image = encodeImage ?: preferenceManager.getString(KEY_USER_IMAGE)
+            val email = binding.edtEmail.text.toString()
             updateUser(
-                User(fullName = fullName, image = image!!)
+                User(fullName = fullName, image = image!!, email = email)
             )
         }
 
@@ -116,8 +117,6 @@ class EditProfileActivity : AppCompatActivity() {
             handler.postDelayed({
                 isLoading(false)
                 currentUser?.let {
-                    showToast("User is not Exist")
-                } ?: kotlin.run {
                     userViewModel.updateUser(user);
                     preferenceManager.putString(KEY_USER_IMAGE, user.image)
                     preferenceManager.putString(KEY_USER_FULL_NAME, user.fullName)
@@ -128,6 +127,8 @@ class EditProfileActivity : AppCompatActivity() {
                     )
                         .show()
                     finish()
+                } ?: kotlin.run {
+                    showToast("User is not Exist")
                 }
             }, 3000)
 
