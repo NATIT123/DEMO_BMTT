@@ -1,10 +1,12 @@
 package com.example.demo.viewModel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.demo.database.DemoDatabase
 import com.example.demo.models.User
+import com.example.demo.models.Video
 import kotlinx.coroutines.launch
 
 
@@ -12,6 +14,12 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
     private var userListLiveData = demoDatabase.demoDAO().getListUser();
     private var userLiveData = MutableLiveData<User>();
     private var userEmailLiveData = MutableLiveData<User>();
+    private var listVideoLiveData = demoDatabase.demoDAO().getListVideo()
+
+
+    fun observerListVideo(): LiveData<List<Video>> {
+        return listVideoLiveData
+    }
 
 
     fun checkIsExist(email: String, password: String) {
@@ -25,6 +33,13 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
     fun addUser(user: User) {
         viewModelScope.launch {
             demoDatabase.demoDAO().upsert(user);
+        }
+    }
+
+
+    fun addVideo(video: Video) {
+        viewModelScope.launch {
+            demoDatabase.demoDAO().upsertVideo(video)
         }
     }
 

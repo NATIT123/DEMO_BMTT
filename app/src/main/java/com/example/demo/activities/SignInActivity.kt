@@ -27,6 +27,8 @@ class SignInActivity : AppCompatActivity() {
     private var showPassword: Boolean = false
     private lateinit var preferenceManager: PreferenceManager
 
+
+
     private val userViewModel: DemoViewModel by lazy {
         val demoDatabase = DemoDatabase.getInstance(this)
         val demoViewModelFactory = DemoViewModelFactory(demoDatabase)

@@ -4,11 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
@@ -21,8 +21,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import com.example.demo.MainActivity
 import com.example.demo.R
 import com.example.demo.databinding.FragmentUploadBinding
+import com.example.demo.models.Video
+import com.example.demo.viewModel.DemoViewModel
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -37,21 +42,36 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.math.log10
+import kotlin.math.pow
 
 
 class UploadFragment : Fragment() {
 
     private lateinit var binding: FragmentUploadBinding
     private var selectVideoUri: Uri? = null
+    private var thumbnail: Bitmap? = null
+
+    private lateinit var demoViewModel: DemoViewModel
 
     private val pickVideo =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == AppCompatActivity.RESULT_OK) {
                 if (result.data != null) {
                     selectVideoUri = result.data?.data!!
+                    binding.tvVideoLink.text = selectVideoUri!!.path
 
-                    Log.d("MyApp", selectVideoUri!!.path.toString())
-
+                    thumbnail = getVideoThumbnail(requireContext(), selectVideoUri!!)
+                    if (thumbnail != null) {
+                        binding.imgVideo.visibility = View.VISIBLE
+                        binding.imgVideo.setImageBitmap(thumbnail)
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Cannot generate thumbnail",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
@@ -67,20 +87,20 @@ class UploadFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        demoViewModel = (activity as MainActivity).viewModel
+
         binding.btnPickVideo.setOnClickListener {
             checkPermissionVideoPicker()
         }
 
         binding.btnUpload.setOnClickListener {
-            selectVideoUri?.let { uri ->
-                val encryptedFilePath =
-                    requireContext().getExternalFilesDir(null)?.absolutePath + "/encrypted_video.mp4"
-                val success = encryptVideo(requireContext(), uri, encryptedFilePath)
-                if (success) {
-                    Log.d("MyApp", "Video encrypted and saved at $encryptedFilePath")
-                } else {
-                    Log.e("MyApp", "Encryption failed")
-                }
+            val name = binding.edtVideoName.text.toString()
+            if (name.isNotEmpty()) {
+                binding.isLoading = true
+                uploadVideo(name)
+            } else {
+                Toast.makeText(requireContext(), "Please fill the name video", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -98,18 +118,104 @@ class UploadFragment : Fragment() {
         }
 
         binding.btnShareVideo.setOnClickListener {
-            selectVideoUri?.let {
-                val shareIntent = Intent()
-                shareIntent.action = Intent.ACTION_SEND
-                shareIntent.type = "video/*"
-                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(selectVideoUri!!.path))
-                ContextCompat.startActivity(
+            val videoFile = File(requireContext().getExternalFilesDir(null), "encrypted_video.mp4")
+            if (videoFile.exists()) {
+                val videoUri = FileProvider.getUriForFile(
                     requireContext(),
-                    Intent.createChooser(shareIntent, "Sharing video File!!"),
-                    null
+                    "${requireContext().packageName}.provider",
+                    videoFile
                 )
+                selectVideoUri?.let {
+                    val shareIntent = Intent()
+                    shareIntent.action = Intent.ACTION_SEND
+                    shareIntent.type = "video/*"
+                    shareIntent.putExtra(
+                        Intent.EXTRA_STREAM,
+                        videoUri
+                    )
+                    startActivity(Intent.createChooser(shareIntent, "Sharing video File!!"))
+                }
             }
 
+        }
+    }
+
+    private fun getVideoThumbnail(context: Context, videoUri: Uri): Bitmap? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, videoUri)
+            val bitmap = retriever.frameAtTime
+            retriever.release()
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun uploadVideo(videoName: String) {
+        selectVideoUri?.let { uri ->
+            createFolder("encryptedVideo")
+            val encryptedFilePath =
+                requireContext().getExternalFilesDir(null)?.absolutePath + "/encryptedVideo/$videoName.mp4"
+            val success =
+                encryptVideo(videoName, encryptedFilePath, requireContext(), uri, encryptedFilePath)
+            if (success) {
+                binding.edtVideoName.setText("")
+                binding.tvVideoLink.text = ""
+                binding.imgVideo.setImageBitmap(null)
+                Toast.makeText(requireContext(), "Upload Video Success", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Upload Video Failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun getFileSize(context: Context, uri: Uri): Long {
+        return try {
+            context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val sizeIndex = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
+                if (cursor.moveToFirst()) {
+                    cursor.getLong(sizeIndex)
+                } else {
+                    0L
+                }
+            } ?: 0L
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0L
+        }
+    }
+
+    private fun getVideoDuration(context: Context, uri: Uri): Long {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+            val duration =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong()
+                    ?: 0L
+            retriever.release()
+            duration
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0L
+        }
+    }
+
+
+    private fun createFolder(folderName: String) {
+        val externalFilesDir = context?.getExternalFilesDir(null)
+
+        val sharedVideoDir = File(externalFilesDir, folderName)
+
+        if (!sharedVideoDir.exists()) {
+            val created = sharedVideoDir.mkdirs()
+            if (created) {
+                Log.d("FileProvider", "Folder $folderName is created.")
+            } else {
+                Log.e("FileProvider", "Can not create $folderName.")
+            }
         }
     }
 
@@ -139,7 +245,13 @@ class UploadFragment : Fragment() {
     }
 
     // Mã hóa video
-    private fun encryptVideo(context: Context, videoUri: Uri, outputFilePath: String): Boolean {
+    private fun encryptVideo(
+        videoName: String,
+        encryptedFilePath: String,
+        context: Context,
+        videoUri: Uri,
+        outputFilePath: String
+    ): Boolean {
         return try {
             val inputStream = context.contentResolver.openInputStream(videoUri) ?: return false
             val encryptedFile = File(outputFilePath)
@@ -161,7 +273,17 @@ class UploadFragment : Fragment() {
             }
 
             inputStream.close()
-            saveKeyAndIv(context, secretKey, iv, encryptedFile.name)
+            val currentVideo = Video(
+                fileName = videoName,
+                encryptedFilePath = encryptedFilePath,
+                originalPath = videoUri.path.toString(),
+                originalSize = getFileSize(requireContext(), videoUri),
+                duration = getVideoDuration(requireContext(), videoUri),
+                secretKey = Base64.encodeToString(secretKey.encoded, Base64.DEFAULT),
+                iv = Base64.encodeToString(iv, Base64.DEFAULT),
+            )
+            demoViewModel.addVideo(currentVideo)
+            binding.isLoading = false
             true
         } catch (e: Exception) {
             e.printStackTrace()
@@ -169,16 +291,6 @@ class UploadFragment : Fragment() {
         }
     }
 
-    // Hàm lưu khóa AES và IV
-    private fun saveKeyAndIv(context: Context, key: SecretKey, iv: ByteArray, fileName: String) {
-        val sharedPrefs = context.getSharedPreferences("VideoKeys", Context.MODE_PRIVATE)
-        sharedPrefs.edit().apply {
-            putString("${fileName}_key", Base64.encodeToString(key.encoded, Base64.DEFAULT))
-            putString("${fileName}_iv", Base64.encodeToString(iv, Base64.DEFAULT))
-            apply()
-        }
-
-    }
 
     private fun decryptVideo(
         context: Context,

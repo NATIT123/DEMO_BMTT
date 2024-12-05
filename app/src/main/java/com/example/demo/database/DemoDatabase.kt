@@ -6,8 +6,9 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.demo.models.User
+import com.example.demo.models.Video
 
-@Database(entities = [User::class], version = 1)
+@Database(entities = [User::class, Video::class], version = 1)
 abstract class DemoDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: DemoDatabase? = null

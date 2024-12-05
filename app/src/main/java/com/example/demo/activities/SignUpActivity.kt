@@ -20,7 +20,6 @@ import com.example.demo.R
 import com.example.demo.database.DemoDatabase
 import com.example.demo.databinding.ActivitySignUpBinding
 import com.example.demo.models.User
-import com.example.demo.utils.Constants
 import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
 import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
 import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE

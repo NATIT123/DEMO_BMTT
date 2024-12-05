@@ -6,9 +6,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "videos")
 class Video(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    val id: Long? = 0,
     var fileName: String,
     var encryptedFilePath: String,
     val originalPath: String,
     val originalSize: Long,
-    )
+    val duration: Long,
+    val iv: String,
+    val secretKey: String,
+)
