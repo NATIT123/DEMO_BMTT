@@ -15,6 +15,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -102,11 +103,12 @@ dependencies {
 
 
     //Encrypt
-    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     //Exo Player
-    implementation("androidx.media3:media3-exoplayer:1.5.0")
-    implementation("androidx.media3:media3-exoplayer-dash:1.5.0")
-    implementation("androidx.media3:media3-ui:1.5.0")
+    implementation("com.google.android.exoplayer:exoplayer:2.14.1")
+
+    //MultiDex
+    implementation("androidx.multidex:multidex:2.0.1")
 
 }

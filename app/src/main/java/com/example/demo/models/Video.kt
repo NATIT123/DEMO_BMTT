@@ -2,6 +2,7 @@ package com.example.demo.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
 
 @Entity(tableName = "videos")
 class Video(
@@ -14,4 +15,4 @@ class Video(
     val duration: Long,
     val iv: String,
     val secretKey: String,
-)
+) : Serializable

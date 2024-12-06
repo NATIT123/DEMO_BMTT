@@ -10,9 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.demo.MainActivity
+import com.example.demo.R
 import com.example.demo.adapters.VideoFileAdapter
 import com.example.demo.databinding.FragmentListVideoBinding
 import com.example.demo.models.Video
@@ -71,8 +73,12 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
     }
 
     override fun playVideo(position: Int) {
-        Toast.makeText(requireContext(), listVideo[position].fileName, Toast.LENGTH_SHORT)
-            .show()
+        val video = listVideo[position]
+        val bundle = Bundle().apply {
+            putSerializable("video", video)
+            putInt("position", position)
+        }
+        findNavController().navigate(R.id.action_listVideoFragment_to_videoPlayerFragment, bundle)
 
     }
 }

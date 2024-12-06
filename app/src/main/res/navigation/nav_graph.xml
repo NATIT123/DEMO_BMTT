@@ -8,7 +8,15 @@
         android:id="@+id/listVideoFragment"
         android:name="com.example.demo.fragments.ListVideoFragment"
         android:label="fragment_list_video"
-        tools:layout="@layout/fragment_list_video" />
+        tools:layout="@layout/fragment_list_video">
+        <action
+            android:id="@+id/action_listVideoFragment_to_videoPlayerFragment"
+            app:destination="@id/videoPlayerFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.demo.fragments.ProfileFragment"
@@ -24,4 +32,16 @@
         android:name="com.example.demo.fragments.UploadFragment"
         android:label="fragment_upload"
         tools:layout="@layout/fragment_upload" />
+    <fragment
+        android:id="@+id/videoPlayerFragment"
+        android:name="com.example.demo.fragments.VideoPlayerFragment"
+        android:label="fragment_video_player"
+        tools:layout="@layout/fragment_video_player" >
+        <argument
+            android:name="video"
+            app:argType="com.example.demo.models.Video" />
+        <argument
+            android:name="position"
+            app:argType="integer" />
+    </fragment>
 </navigation>
