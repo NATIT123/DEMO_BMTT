@@ -104,40 +104,7 @@ class UploadFragment : Fragment() {
             }
         }
 
-        binding.btnDecrypt.setOnClickListener {
-            val encryptedFilePath =
-                requireContext().getExternalFilesDir(null)?.absolutePath + "/encrypted_video.mp4"
-            val decryptedFilePath =
-                requireContext().getExternalFilesDir(null)?.absolutePath + "/decrypted_video.mp4"
-            val success = decryptVideo(requireContext(), encryptedFilePath, decryptedFilePath)
-            if (success) {
-                Log.d("MyApp", "Video decrypted and saved at $decryptedFilePath")
-            } else {
-                Log.e("MyApp", "Decryption failed")
-            }
-        }
 
-        binding.btnShareVideo.setOnClickListener {
-            val videoFile = File(requireContext().getExternalFilesDir(null), "encrypted_video.mp4")
-            if (videoFile.exists()) {
-                val videoUri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "${requireContext().packageName}.provider",
-                    videoFile
-                )
-                selectVideoUri?.let {
-                    val shareIntent = Intent()
-                    shareIntent.action = Intent.ACTION_SEND
-                    shareIntent.type = "video/*"
-                    shareIntent.putExtra(
-                        Intent.EXTRA_STREAM,
-                        videoUri
-                    )
-                    startActivity(Intent.createChooser(shareIntent, "Sharing video File!!"))
-                }
-            }
-
-        }
     }
 
     private fun getVideoThumbnail(context: Context, videoUri: Uri): Bitmap? {
@@ -292,43 +259,6 @@ class UploadFragment : Fragment() {
     }
 
 
-    private fun decryptVideo(
-        context: Context,
-        encryptedFilePath: String,
-        outputFilePath: String
-    ): Boolean {
-        return try {
-            val sharedPrefs = context.getSharedPreferences("VideoKeys", Context.MODE_PRIVATE)
-            val keyBase64 =
-                sharedPrefs.getString("${File(encryptedFilePath).name}_key", null) ?: return false
-            val ivBase64 =
-                sharedPrefs.getString("${File(encryptedFilePath).name}_iv", null) ?: return false
-
-            val keyBytes = Base64.decode(keyBase64, Base64.DEFAULT)
-            val ivBytes = Base64.decode(ivBase64, Base64.DEFAULT)
-            val secretKey = SecretKeySpec(keyBytes, "AES")
-
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
-                init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(ivBytes))
-            }
-
-            val decryptedFile = File(outputFilePath)
-
-            FileInputStream(File(encryptedFilePath)).use { fileIn ->
-                FileOutputStream(decryptedFile).use { fileOut ->
-                    fileIn.skip(16)
-                    CipherInputStream(fileIn, cipher).use { cipherIn ->
-                        cipherIn.copyTo(fileOut)
-                    }
-                }
-            }
-
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
 
 
 }

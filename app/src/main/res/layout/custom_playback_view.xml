@@ -82,7 +82,7 @@
                 android:src="@drawable/exo_ic_forward" />
 
             <ImageButton
-                android:id="@+id/exo_prev"
+                android:id="@+id/exo_prev_"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/Black"
@@ -106,7 +106,7 @@
                 android:src="@drawable/exo_controls_pause" />
 
             <ImageButton
-                android:id="@+id/exo_next"
+                android:id="@+id/exo_next_"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/Black"

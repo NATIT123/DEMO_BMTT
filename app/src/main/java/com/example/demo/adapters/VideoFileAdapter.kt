@@ -1,5 +1,6 @@
 package com.example.demo.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -30,6 +31,7 @@ class VideoFileAdapter(
 
     interface OnClickListener {
         fun playVideo(position: Int)
+        fun moreVideo(position: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoFileViewHolder {
@@ -41,6 +43,7 @@ class VideoFileAdapter(
         return listVideo.size
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: VideoFileViewHolder, position: Int) {
         val video = listVideo[position]
         holder.itemView.setOnClickListener {
@@ -49,11 +52,14 @@ class VideoFileAdapter(
         holder.layoutVideoItemBinding.apply {
             tvSize.text = formatFileSize(video.originalSize)
             tvDuration.text = timeConversion(video.duration)
-            tvVideoName.text = video.fileName
+            tvVideoName.text = "${video.fileName}.mp4"
             val id = video.originalPath.substringAfterLast("/")
             val videoUri = getMediaStoreUri(id)
             Glide.with(context).load(videoUri).error(R.drawable.avatar)
                 .into(thumbnail)
+            btnMore.setOnClickListener {
+                mOnClickListener.moreVideo(position)
+            }
         }
     }
 

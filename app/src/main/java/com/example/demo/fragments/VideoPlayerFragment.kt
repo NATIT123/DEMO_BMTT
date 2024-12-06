@@ -1,10 +1,12 @@
 package com.example.demo.fragments
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -35,6 +37,13 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 
 class VideoPlayerFragment : Fragment(), View.OnClickListener {
@@ -64,7 +73,7 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
         getListVideo()
         val video = args.video
         position = args.position
-        playVideo(video, position)
+        playVideo(video)
 
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner,
@@ -78,9 +87,9 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
             })
 
         //Handle Prev Button
-        requireActivity().findViewById<ImageButton>(R.id.exo_prev).setOnClickListener(this)
+        requireActivity().findViewById<ImageButton>(R.id.exo_prev_).setOnClickListener(this)
         //Handle Next Button
-        requireActivity().findViewById<ImageButton>(R.id.exo_next).setOnClickListener(this)
+        requireActivity().findViewById<ImageButton>(R.id.exo_next_).setOnClickListener(this)
 
 
         //Handle Back Button
@@ -110,7 +119,7 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun playVideo(video: Video, position: Int) {
+    private fun playVideo(video: Video) {
         val id = video.originalPath.substringAfterLast("/")
         val videoUri = getMediaStoreUri(id)
         player = SimpleExoPlayer.Builder(requireContext()).build()
@@ -120,8 +129,56 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
             binding.exoplayerView.keepScreenOn = true
             exoPlayer.setMediaItem(MediaItem.fromUri(videoUri))
             exoPlayer.prepare()
-            exoPlayer.seekTo(position, C.TIME_UNSET)
             playError(exoPlayer)
+        }
+    }
+
+    private fun decryptVideo(video: Video) {
+        val encryptedFilePath =
+            video.encryptedFilePath
+        val decryptedFilePath =
+            requireContext().getExternalFilesDir(null)?.absolutePath + "/decryptedVideo/${video.fileName}.mp4"
+        val success = decryptVideo(requireContext(), encryptedFilePath, decryptedFilePath,video.iv,video.secretKey)
+        if (success) {
+            android.util.Log.d("MyApp", "Video decrypted and saved at $decryptedFilePath")
+        } else {
+            android.util.Log.e("MyApp", "Decryption failed")
+        }
+    }
+
+    private fun decryptVideo(
+        context: Context,
+        encryptedFilePath: String,
+        outputFilePath: String,
+        iv: String,
+        key: String
+    ): Boolean {
+        return try {
+            val sharedPrefs = context.getSharedPreferences("VideoKeys", Context.MODE_PRIVATE)
+
+            val keyBytes = Base64.decode(key, Base64.DEFAULT)
+            val ivBytes = Base64.decode(iv, Base64.DEFAULT)
+            val secretKey = SecretKeySpec(keyBytes, "AES")
+
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding").apply {
+                init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(ivBytes))
+            }
+
+            val decryptedFile = File(outputFilePath)
+
+            FileInputStream(File(encryptedFilePath)).use { fileIn ->
+                FileOutputStream(decryptedFile).use { fileOut ->
+                    fileIn.skip(16)
+                    CipherInputStream(fileIn, cipher).use { cipherIn ->
+                        cipherIn.copyTo(fileOut)
+                    }
+                }
+            }
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 
@@ -161,20 +218,22 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.exo_next -> {
+            R.id.exo_next_ -> {
                 try {
+                    position += 1
                     player?.stop()
-                    playVideo(listVideo[position + 1], position + 1)
+                    playVideo(listVideo[position])
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "No Next Video", Toast.LENGTH_SHORT).show()
                     onBackPressed()
                 }
             }
 
-            R.id.exo_prev -> {
+            R.id.exo_prev_ -> {
                 try {
                     player?.stop()
-                    playVideo(listVideo[position - 1], position - 1)
+                    position -= 1
+                    playVideo(listVideo[position - 1])
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "No Previous Video", Toast.LENGTH_SHORT).show()
                     onBackPressed()

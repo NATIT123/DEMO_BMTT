@@ -81,30 +81,6 @@
             android:textStyle="bold"
             android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnDecrypt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginTop="@dimen/_30sdp"
-            android:layout_marginEnd="@dimen/_10sdp"
-            android:background="@drawable/round_button_blue_15"
-            android:text="Decrypt"
-            android:textStyle="bold"
-            android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnShareVideo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
-            android:layout_marginTop="@dimen/_30sdp"
-            android:layout_marginEnd="@dimen/_10sdp"
-            android:background="@drawable/round_button_blue_15"
-            android:text="ShareVideo"
-            android:textStyle="bold"
-            android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
-
 
     </LinearLayout>
 </layout>

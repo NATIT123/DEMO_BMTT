@@ -49,6 +49,18 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
         }
     }
 
+    fun updateVideo(id: Long, name: String, encryptedFilePath: String) {
+        viewModelScope.launch {
+            demoDatabase.demoDAO().updateVideo(id, name, encryptedFilePath)
+        }
+    }
+
+    fun deleteVideo(id: Long) {
+        viewModelScope.launch {
+            demoDatabase.demoDAO().deleteVideo(id)
+        }
+    }
+
     fun changePassword(password: String) {
         viewModelScope.launch {
             demoDatabase.demoDAO().changePassword(password)

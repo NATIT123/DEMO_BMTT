@@ -22,6 +22,12 @@ interface DemoDAO {
     @Query("SELECT * FROM users")
     fun getListUser(): LiveData<List<User>>
 
+    @Query("UPDATE videos SET fileName= :name,encryptedFilePath= :encryptedFilePath WHERE id= :id")
+    suspend fun updateVideo(id: Long, name: String, encryptedFilePath: String)
+
+    @Query("DELETE FROM videos WHERE id= :id")
+    suspend fun deleteVideo(id: Long)
+
     @Query("SELECT * FROM videos")
     fun getListVideo(): LiveData<List<Video>>
 
@@ -29,7 +35,7 @@ interface DemoDAO {
     fun getUserByEmailAndPassword(email: String, password: String): User
 
     @Query("UPDATE users SET full_name= :fullName , image= :image WHERE email= :email")
-    fun updateUser(fullName: String, image: String, email: String)
+    suspend fun updateUser(fullName: String, image: String, email: String)
 
     @Query("SELECT * FROM users WHERE email= :email")
     fun checkEmailIsExist(email: String): User

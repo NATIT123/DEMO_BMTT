@@ -27,7 +27,7 @@
             android:id="@+id/rcvVideo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{isLoading?View.GONE:View.VISIBLE,default=visible}" />
+            android:visibility="@{isEmpty?View.GONE:View.VISIBLE,default=gone}" />
 
         <ProgressBar
             android:id="@+id/progress_bar"
