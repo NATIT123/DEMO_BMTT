@@ -18,6 +18,7 @@ import com.example.demo.databinding.ActivitySignInBinding
 import com.example.demo.models.User
 import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
 import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
+import com.example.demo.utils.Constants.Companion.KEY_USER_ID
 import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE
 import com.example.demo.viewModel.DemoViewModel
 import com.example.demo.viewModel.DemoViewModelFactory
@@ -26,7 +27,6 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignInBinding
     private var showPassword: Boolean = false
     private lateinit var preferenceManager: PreferenceManager
-
 
 
     private val userViewModel: DemoViewModel by lazy {
@@ -44,8 +44,6 @@ class SignInActivity : AppCompatActivity() {
         preferenceManager = PreferenceManager(applicationContext)
         preferenceManager.instance()
 
-        preferenceManager = PreferenceManager(applicationContext)
-        preferenceManager.instance()
 
         preferenceManager.getString(KEY_USER_EMAIL)?.let {
             val intent = Intent(this@SignInActivity, MainActivity::class.java);
@@ -125,12 +123,15 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun handleLoginUser(user: User) {
-        userViewModel.checkIsExist(user.email, user.password);
-        userViewModel.observerUser().observe(this) { currentUser ->
+        userViewModel.observerUser(user.email, user.password).observe(this) { currentUser ->
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed({
                 isLoading(false)
                 currentUser?.let {
+                    preferenceManager.putLong(KEY_USER_ID, currentUser.id!!)
+
+
+
                     preferenceManager.putString(
                         KEY_USER_EMAIL,
                         currentUser.email

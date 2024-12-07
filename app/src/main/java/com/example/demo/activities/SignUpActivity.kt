@@ -15,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.demo.MainActivity
 import com.example.demo.R
 import com.example.demo.database.DemoDatabase
@@ -22,6 +23,7 @@ import com.example.demo.databinding.ActivitySignUpBinding
 import com.example.demo.models.User
 import com.example.demo.utils.Constants.Companion.KEY_USER_EMAIL
 import com.example.demo.utils.Constants.Companion.KEY_USER_FULL_NAME
+import com.example.demo.utils.Constants.Companion.KEY_USER_ID
 import com.example.demo.utils.Constants.Companion.KEY_USER_IMAGE
 import com.example.demo.utils.Constants.Companion.SALT_ROUNDS
 import com.example.demo.utils.PreferenceManager
@@ -29,6 +31,7 @@ import com.example.demo.viewModel.DemoViewModel
 import com.example.demo.viewModel.DemoViewModelFactory
 import com.toxicbakery.bcrypt.Bcrypt
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -168,7 +171,8 @@ class SignUpActivity : AppCompatActivity() {
             user.password,
             SALT_ROUNDS
         )
-        runBlocking {
+
+        lifecycleScope.launch {
             val file = File(filesDir, "my_file.bin")
             withContext(Dispatchers.IO) {
                 FileOutputStream(file).use { output ->
@@ -176,6 +180,7 @@ class SignUpActivity : AppCompatActivity() {
                 }
             }
         }
+
 
         user.let {
             userViewModel.checkEmailIsExist(user.email)
@@ -186,25 +191,36 @@ class SignUpActivity : AppCompatActivity() {
                         isLoading(false)
                         showToast("Email is Exist")
                     } ?: kotlin.run {
-                        userViewModel.addUser(user)
-                        preferenceManager.putString(
-                            KEY_USER_EMAIL,
-                            user.email
-                        );
-                        preferenceManager.putString(
-                            KEY_USER_FULL_NAME,
-                            user.fullName
-                        )
-                        preferenceManager.putString(KEY_USER_IMAGE, user.image)
-                        val intent = Intent(this@SignUpActivity, MainActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        startActivity(intent)
-                        Toast.makeText(
-                            this@SignUpActivity,
-                            "Register Successfully",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        lifecycleScope.launch {
+                            val id = userViewModel.addUser(user)
+
+                            withContext(Dispatchers.Main) {
+
+
+                                preferenceManager.putLong(KEY_USER_ID, id)
+
+                                preferenceManager.putString(
+                                    KEY_USER_EMAIL,
+                                    user.email
+                                );
+                                preferenceManager.putString(
+                                    KEY_USER_FULL_NAME,
+                                    user.fullName
+                                )
+                                preferenceManager.putString(KEY_USER_IMAGE, user.image)
+                                val intent = Intent(this@SignUpActivity, MainActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                startActivity(intent)
+                                Toast.makeText(
+                                    this@SignUpActivity,
+                                    "Register Successfully",
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+
+                        }
+
                     }
                 }, 3000)
 

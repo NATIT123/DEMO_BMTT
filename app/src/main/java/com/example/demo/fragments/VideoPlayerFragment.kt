@@ -120,29 +120,55 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
 
     @SuppressLint("SetTextI18n")
     private fun playVideo(video: Video) {
-        val id = video.originalPath.substringAfterLast("/")
-        val videoUri = getMediaStoreUri(id)
-        player = SimpleExoPlayer.Builder(requireContext()).build()
-        player?.let { exoPlayer ->
-            requireActivity().findViewById<TextView>(R.id.tvTitle).text = "${video.fileName}.mp4"
-            binding.exoplayerView.player = exoPlayer
-            binding.exoplayerView.keepScreenOn = true
-            exoPlayer.setMediaItem(MediaItem.fromUri(videoUri))
-            exoPlayer.prepare()
-            playError(exoPlayer)
+//        val id = video.originalPath.substringAfterLast("/")
+//        val videoUri = getMediaStoreUri(id)
+        val decryptedFilePath = decryptVideo(video)
+        decryptedFilePath?.let {
+            player = SimpleExoPlayer.Builder(requireContext()).build()
+            player?.let { exoPlayer ->
+                requireActivity().findViewById<TextView>(R.id.tvTitle).text =
+                    "${video.fileName}.mp4"
+                binding.exoplayerView.player = exoPlayer
+                binding.exoplayerView.keepScreenOn = true
+                exoPlayer.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(decryptedFilePath))))
+                exoPlayer.prepare()
+                playError(exoPlayer)
+            }
         }
     }
 
-    private fun decryptVideo(video: Video) {
+    private fun createFolder(folderName: String) {
+        val externalFilesDir = context?.getExternalFilesDir(null)
+
+        val sharedVideoDir = File(externalFilesDir, folderName)
+
+        if (!sharedVideoDir.exists()) {
+            val created = sharedVideoDir.mkdirs()
+            if (created) {
+                android.util.Log.d("FileProvider", "Folder $folderName is created.")
+            } else {
+                android.util.Log.e("FileProvider", "Can not create $folderName.")
+            }
+        }
+    }
+
+    private fun decryptVideo(video: Video): String? {
         val encryptedFilePath =
             video.encryptedFilePath
+        createFolder("decryptedVideo")
         val decryptedFilePath =
             requireContext().getExternalFilesDir(null)?.absolutePath + "/decryptedVideo/${video.fileName}.mp4"
-        val success = decryptVideo(requireContext(), encryptedFilePath, decryptedFilePath,video.iv,video.secretKey)
+        val success = decryptVideo(
+            requireContext(),
+            encryptedFilePath,
+            decryptedFilePath,
+            video.iv,
+            video.secretKey
+        )
         if (success) {
-            android.util.Log.d("MyApp", "Video decrypted and saved at $decryptedFilePath")
+            return decryptedFilePath
         } else {
-            android.util.Log.e("MyApp", "Decryption failed")
+            return null
         }
     }
 

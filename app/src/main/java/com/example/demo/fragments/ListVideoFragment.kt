@@ -33,6 +33,8 @@ import com.example.demo.activities.SignInActivity
 import com.example.demo.adapters.VideoFileAdapter
 import com.example.demo.databinding.FragmentListVideoBinding
 import com.example.demo.models.Video
+import com.example.demo.utils.Constants.Companion.KEY_USER_ID
+import com.example.demo.utils.PreferenceManager
 import com.example.demo.viewModel.DemoViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import java.io.File
@@ -46,6 +48,7 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
     private lateinit var demoViewModel: DemoViewModel
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var dialogRename: AlertDialog.Builder
+    private lateinit var preferenceManager: PreferenceManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,7 +62,10 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
         super.onViewCreated(view, savedInstanceState)
 
         demoViewModel = (activity as MainActivity).viewModel
+        preferenceManager = PreferenceManager(requireContext())
+        preferenceManager.instance()
 
+        demoViewModel.getListVideo(preferenceManager.getLong(KEY_USER_ID))
         demoViewModel.observerListVideo().observe(viewLifecycleOwner) { data ->
             binding.isLoading = true
             val handler = Handler(Looper.getMainLooper())

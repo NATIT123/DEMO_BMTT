@@ -7,14 +7,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.demo.database.DemoDatabase
 import com.example.demo.models.User
 import com.example.demo.models.Video
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
     private var userListLiveData = demoDatabase.demoDAO().getListUser();
     private var userLiveData = MutableLiveData<User>();
     private var userEmailLiveData = MutableLiveData<User>();
-    private var listVideoLiveData = demoDatabase.demoDAO().getListVideo()
+    private var listVideoLiveData = MutableLiveData<List<Video>>()
 
 
     fun observerListVideo(): LiveData<List<Video>> {
@@ -22,17 +24,35 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
     }
 
 
-    fun checkIsExist(email: String, password: String) {
-        userLiveData.postValue(demoDatabase.demoDAO().getUserByEmailAndPassword(email, password))
+    fun getListVideo(userId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val video = demoDatabase.demoDAO().getListVideo(userId)
+            listVideoLiveData.postValue(video)
+        }
     }
 
-    fun observerUser(): MutableLiveData<User> {
+
+    fun checkIsExist(email: String, password: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = demoDatabase.demoDAO().getUserByEmailAndPassword(email, password)
+            userLiveData.postValue(user)
+        }
+    }
+
+    fun observerUser(email: String, password: String): MutableLiveData<User> {
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = demoDatabase.demoDAO()
+                .getUserByEmailAndPassword(email, password)
+            withContext(Dispatchers.Main) {
+                userLiveData.value = user
+            }
+        }
         return userLiveData
     }
 
-    fun addUser(user: User) {
-        viewModelScope.launch {
-            demoDatabase.demoDAO().upsert(user);
+    suspend fun addUser(user: User): Long {
+        return withContext(Dispatchers.IO) {
+            demoDatabase.demoDAO().upsert(user)
         }
     }
 

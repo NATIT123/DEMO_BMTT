@@ -28,8 +28,8 @@ interface DemoDAO {
     @Query("DELETE FROM videos WHERE id= :id")
     suspend fun deleteVideo(id: Long)
 
-    @Query("SELECT * FROM videos")
-    fun getListVideo(): LiveData<List<Video>>
+    @Query("SELECT * FROM videos WHERE userId=:userId")
+    fun getListVideo(userId: Long): List<Video>
 
     @Query("SELECT * FROM users WHERE email = :email AND password = :password")
     fun getUserByEmailAndPassword(email: String, password: String): User

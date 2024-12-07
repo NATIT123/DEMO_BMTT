@@ -26,6 +26,8 @@ import com.example.demo.MainActivity
 import com.example.demo.R
 import com.example.demo.databinding.FragmentUploadBinding
 import com.example.demo.models.Video
+import com.example.demo.utils.Constants.Companion.KEY_USER_ID
+import com.example.demo.utils.PreferenceManager
 import com.example.demo.viewModel.DemoViewModel
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -53,6 +55,7 @@ class UploadFragment : Fragment() {
     private var thumbnail: Bitmap? = null
 
     private lateinit var demoViewModel: DemoViewModel
+    private lateinit var preferenceManager: PreferenceManager
 
     private val pickVideo =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -86,6 +89,9 @@ class UploadFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        preferenceManager = PreferenceManager(requireContext())
+        preferenceManager.instance()
 
         demoViewModel = (activity as MainActivity).viewModel
 
@@ -248,6 +254,7 @@ class UploadFragment : Fragment() {
                 duration = getVideoDuration(requireContext(), videoUri),
                 secretKey = Base64.encodeToString(secretKey.encoded, Base64.DEFAULT),
                 iv = Base64.encodeToString(iv, Base64.DEFAULT),
+                userId = preferenceManager.getLong(KEY_USER_ID)
             )
             demoViewModel.addVideo(currentVideo)
             binding.isLoading = false
@@ -257,8 +264,6 @@ class UploadFragment : Fragment() {
             false
         }
     }
-
-
 
 
 }

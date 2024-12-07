@@ -15,4 +15,5 @@ class Video(
     val duration: Long,
     val iv: String,
     val secretKey: String,
+    var userId: Long
 ) : Serializable
