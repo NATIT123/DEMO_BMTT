@@ -2,13 +2,8 @@ package com.example.demo.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -16,13 +11,11 @@ import com.bumptech.glide.Glide
 import com.example.demo.R
 import com.example.demo.databinding.VideoItemBinding
 import com.example.demo.models.Video
-import java.io.File
 import kotlin.math.log10
 import kotlin.math.pow
 
 class VideoFileAdapter(
     private val listVideo: List<Video>,
-    private val context: Context,
     private val mOnClickListener: OnClickListener
 ) :
     RecyclerView.Adapter<VideoFileAdapter.VideoFileViewHolder>() {
@@ -55,7 +48,7 @@ class VideoFileAdapter(
             tvVideoName.text = "${video.fileName}.mp4"
             val id = video.originalPath.substringAfterLast("/")
             val videoUri = getMediaStoreUri(id)
-            Glide.with(context).load(videoUri).error(R.drawable.avatar)
+            Glide.with(holder.itemView).load(videoUri).error(R.drawable.avatar)
                 .into(thumbnail)
             btnMore.setOnClickListener {
                 mOnClickListener.moreVideo(position)

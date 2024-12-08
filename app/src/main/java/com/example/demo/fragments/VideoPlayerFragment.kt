@@ -1,20 +1,17 @@
 package com.example.demo.fragments
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
+import android.os.Environment
 import android.util.Base64
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowManager
-import android.webkit.WebViewClient
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -25,18 +22,13 @@ import com.example.demo.MainActivity
 import com.example.demo.R
 import com.example.demo.databinding.FragmentVideoPlayerBinding
 import com.example.demo.models.Video
+import com.example.demo.utils.Constants.Companion.KEY_SHARE_VIDEO
 import com.example.demo.viewModel.DemoViewModel
-import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import com.google.android.exoplayer2.util.Log
-import com.google.android.exoplayer2.util.Util
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -52,10 +44,10 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
     private lateinit var binding: FragmentVideoPlayerBinding
     private val args: VideoPlayerFragmentArgs by navArgs()
     private lateinit var demoViewModel: DemoViewModel
-    private lateinit var title: TextView
     private var player: ExoPlayer? = null
     private var listVideo = listOf<Video>()
     private var position = -1
+    private var option = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,8 +65,8 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
         getListVideo()
         val video = args.video
         position = args.position
+        option = args.option
         playVideo(video)
-
 
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -120,8 +112,6 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
 
     @SuppressLint("SetTextI18n")
     private fun playVideo(video: Video) {
-//        val id = video.originalPath.substringAfterLast("/")
-//        val videoUri = getMediaStoreUri(id)
         val decryptedFilePath = decryptVideo(video)
         decryptedFilePath?.let {
             player = SimpleExoPlayer.Builder(requireContext()).build()
@@ -152,14 +142,24 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
         }
     }
 
+    private fun getFilePathFromDownload(fileName: String): String {
+        val downloadPath =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        return "${File(downloadPath, fileName).absolutePath}.mp4"
+    }
+
     private fun decryptVideo(video: Video): String? {
-        val encryptedFilePath =
+        var encryptedFilePath =
             video.encryptedFilePath
-        createFolder("decryptedVideo")
+        var folderName = "decryptedVideo"
+        if (option == KEY_SHARE_VIDEO) {
+            folderName = "sharedVideo"
+            encryptedFilePath = getFilePathFromDownload(video.fileName)
+        }
+        createFolder(folderName)
         val decryptedFilePath =
-            requireContext().getExternalFilesDir(null)?.absolutePath + "/decryptedVideo/${video.fileName}.mp4"
+            requireContext().getExternalFilesDir(null)?.absolutePath + "/$folderName/${video.fileName}.mp4"
         val success = decryptVideo(
-            requireContext(),
             encryptedFilePath,
             decryptedFilePath,
             video.iv,
@@ -173,14 +173,12 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
     }
 
     private fun decryptVideo(
-        context: Context,
         encryptedFilePath: String,
         outputFilePath: String,
         iv: String,
         key: String
     ): Boolean {
         return try {
-            val sharedPrefs = context.getSharedPreferences("VideoKeys", Context.MODE_PRIVATE)
 
             val keyBytes = Base64.decode(key, Base64.DEFAULT)
             val ivBytes = Base64.decode(iv, Base64.DEFAULT)
@@ -215,10 +213,6 @@ class VideoPlayerFragment : Fragment(), View.OnClickListener {
             }
         })
         player.playWhenReady = true
-    }
-
-    private fun getMediaStoreUri(id: String): Uri {
-        return Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
     }
 
     override fun onDestroyView() {

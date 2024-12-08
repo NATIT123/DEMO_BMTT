@@ -26,7 +26,15 @@
         android:id="@+id/sharedFragment"
         android:name="com.example.demo.fragments.SharedFragment"
         android:label="fragment_shared"
-        tools:layout="@layout/fragment_shared" />
+        tools:layout="@layout/fragment_shared">
+        <action
+            android:id="@+id/action_sharedFragment_to_videoPlayerFragment"
+            app:destination="@id/videoPlayerFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
     <fragment
         android:id="@+id/uploadFragment"
         android:name="com.example.demo.fragments.UploadFragment"
@@ -36,12 +44,15 @@
         android:id="@+id/videoPlayerFragment"
         android:name="com.example.demo.fragments.VideoPlayerFragment"
         android:label="fragment_video_player"
-        tools:layout="@layout/fragment_video_player" >
+        tools:layout="@layout/fragment_video_player">
         <argument
             android:name="video"
             app:argType="com.example.demo.models.Video" />
         <argument
             android:name="position"
             app:argType="integer" />
+        <argument
+            android:name="option"
+            app:argType="string" />
     </fragment>
 </navigation>

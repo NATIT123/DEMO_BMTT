@@ -1,6 +1,7 @@
 package com.example.demo.fragments
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.ContentResolver
@@ -22,6 +23,8 @@ import android.view.Window
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.FileProvider
 import androidx.navigation.fragment.findNavController
@@ -33,6 +36,8 @@ import com.example.demo.activities.SignInActivity
 import com.example.demo.adapters.VideoFileAdapter
 import com.example.demo.databinding.FragmentListVideoBinding
 import com.example.demo.models.Video
+import com.example.demo.models.Video_Shared
+import com.example.demo.utils.Constants.Companion.KEY_UPLOAD_VIDEO
 import com.example.demo.utils.Constants.Companion.KEY_USER_ID
 import com.example.demo.utils.PreferenceManager
 import com.example.demo.viewModel.DemoViewModel
@@ -49,6 +54,17 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
     private lateinit var bottomSheetDialog: BottomSheetDialog
     private lateinit var dialogRename: AlertDialog.Builder
     private lateinit var preferenceManager: PreferenceManager
+
+
+    private val shareVideo =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                Toast.makeText(requireContext(), "Share successful", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Share cancelled or failed", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,7 +89,7 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
                 if (data.isNotEmpty()) {
                     binding.isEmpty = false
                     listVideo = data
-                    mVideoFileAdapter = VideoFileAdapter(data, requireContext(), this)
+                    mVideoFileAdapter = VideoFileAdapter(data, this)
                     binding.rcvVideo.apply {
                         adapter = mVideoFileAdapter
                         layoutManager =
@@ -103,6 +119,7 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
         val bundle = Bundle().apply {
             putSerializable("video", video)
             putInt("position", position)
+            putString("option", KEY_UPLOAD_VIDEO)
         }
         findNavController().navigate(R.id.action_listVideoFragment_to_videoPlayerFragment, bundle)
 
@@ -124,7 +141,7 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
             bottomSheetDialog.dismiss()
         }
         bsView.findViewById<LinearLayout>(R.id.shareVideo).setOnClickListener {
-            shareVideo(listVideo[position].encryptedFilePath)
+            shareVideo(listVideo[position])
             bottomSheetDialog.dismiss()
         }
         bsView.findViewById<LinearLayout>(R.id.deleteVideo).setOnClickListener {
@@ -229,8 +246,8 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
         return Uri.fromFile(file)
     }
 
-    private fun shareVideo(pathVideo: String) {
-        val videoFile = File(pathVideo)
+    private fun shareVideo(video: Video) {
+        val videoFile = File(video.encryptedFilePath)
         if (videoFile.exists()) {
             val videoUri = FileProvider.getUriForFile(
                 requireContext(),
@@ -244,7 +261,14 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
                 Intent.EXTRA_STREAM,
                 videoUri
             )
-            startActivity(Intent.createChooser(shareIntent, "Sharing video File!!"))
+            shareVideo.launch(Intent.createChooser(shareIntent, "Sharing video File!!"))
+            demoViewModel.addVideoShared(
+                Video_Shared(
+                    videoId = video.id!!, userId = preferenceManager.getLong(
+                        KEY_USER_ID
+                    )
+                )
+            )
         } else {
             Toast.makeText(requireContext(), "File is not exist", Toast.LENGTH_SHORT).show()
         }
