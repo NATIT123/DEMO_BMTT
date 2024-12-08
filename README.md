@@ -11,7 +11,7 @@ This Demo app provides a comprehensive set of features. Alongside showcasing vid
 ### Database
 
 <div align="center">
-  <img src="demo/Db.PNG"  />
+  <img src="demo/DB.PNG"  />
 </div>
 
 ### How it works
