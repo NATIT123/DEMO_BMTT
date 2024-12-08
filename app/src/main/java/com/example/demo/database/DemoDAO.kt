@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.demo.models.User
 import com.example.demo.models.Video
-import com.example.demo.models.Video_Shared
+import com.example.demo.models.VideoShared
 
 @Dao
 interface DemoDAO {
@@ -43,6 +43,6 @@ interface DemoDAO {
 
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertVideoShared(videoShared: Video_Shared): Long
+    suspend fun upsertVideoShared(videoShared: VideoShared): Long
 
 }

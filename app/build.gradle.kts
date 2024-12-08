@@ -101,7 +101,6 @@ dependencies {
     //HashPassword
     implementation("com.ToxicBakery.library.bcrypt:bcrypt:1.0.9")
 
-
     //Encrypt
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 

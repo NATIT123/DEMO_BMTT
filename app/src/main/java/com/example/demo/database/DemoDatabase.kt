@@ -4,16 +4,15 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.example.demo.models.User
 import com.example.demo.models.Video
-import com.example.demo.models.Video_Shared
+import com.example.demo.models.VideoShared
 
-@Database(entities = [User::class, Video::class, Video_Shared::class], version = 1)
+@Database(entities = [User::class, Video::class, VideoShared::class], version = 1)
 abstract class DemoDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: DemoDatabase? = null
-        private val DATABASE_NAME = "demo.db"
+        private const val DATABASE_NAME = "demo.db"
 
         @Synchronized
         fun getInstance(context: Context): DemoDatabase {

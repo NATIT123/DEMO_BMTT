@@ -36,7 +36,7 @@ import com.example.demo.activities.SignInActivity
 import com.example.demo.adapters.VideoFileAdapter
 import com.example.demo.databinding.FragmentListVideoBinding
 import com.example.demo.models.Video
-import com.example.demo.models.Video_Shared
+import com.example.demo.models.VideoShared
 import com.example.demo.utils.Constants.Companion.KEY_UPLOAD_VIDEO
 import com.example.demo.utils.Constants.Companion.KEY_USER_ID
 import com.example.demo.utils.PreferenceManager
@@ -263,7 +263,7 @@ class ListVideoFragment : Fragment(), VideoFileAdapter.OnClickListener {
             )
             shareVideo.launch(Intent.createChooser(shareIntent, "Sharing video File!!"))
             demoViewModel.addVideoShared(
-                Video_Shared(
+                VideoShared(
                     videoId = video.id!!, userId = preferenceManager.getLong(
                         KEY_USER_ID
                     )

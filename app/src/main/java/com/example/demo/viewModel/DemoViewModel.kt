@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.demo.database.DemoDatabase
 import com.example.demo.models.User
 import com.example.demo.models.Video
-import com.example.demo.models.Video_Shared
+import com.example.demo.models.VideoShared
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -67,7 +67,7 @@ class DemoViewModel(private val demoDatabase: DemoDatabase) : ViewModel() {
         }
     }
 
-    fun addVideoShared(videoShared: Video_Shared) {
+    fun addVideoShared(videoShared: VideoShared) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 demoDatabase.demoDAO().upsertVideoShared(videoShared)
