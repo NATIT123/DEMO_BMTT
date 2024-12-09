@@ -10,10 +10,10 @@ This Demo app provides a comprehensive set of features. Alongside showcasing vid
 
 ## Setup
 
-Clone project from github
-Install Android studio(required)
-Install google drive to use function shared video
-Run app by emulator
+- Clone project from github
+- Install Android studio(required)
+- Install google drive to use function shared video
+- Run app by emulator
 
 
 ### Database
