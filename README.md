@@ -8,6 +8,13 @@ This Demo app provides a comprehensive set of features. Alongside showcasing vid
 
 [Demo](https://www.youtube.com/watch?v=ZK4zuUoke-E)
 
+##Setup
+Clone project from github
+Install Android studio(required)
+Install google drive to use function shared video
+Run app by emulator
+
+
 ### Database
 
 <div align="center">
